@@ -1,0 +1,20 @@
+[
+    {
+        "name" : "홍길동",
+        "school" : "학교이름",
+        "birthday" : "생년월일 6자리",
+        "password" : "페스워드 4자리"    
+    },
+    {
+        "name" : "홍길동",
+        "school" : "학교이름",
+        "birthday" : "생년월일 6자리",
+        "password" : "페스워드 4자리"    
+    },
+    {
+        "name" : "홍길동",
+        "school" : "학교이름",
+        "birthday" : "생년월일 6자리",
+        "password" : "페스워드 4자리"    
+    }
+]
