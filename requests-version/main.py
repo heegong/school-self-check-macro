@@ -67,110 +67,111 @@ class macro:
 
 
     def macro(self, name, schcool, birthday, password):
-        log = f'[+] {datetime.datetime.now()} [Success] {name} '
-        try:
+        while True:
+            log = f'[+] {datetime.datetime.now()} [Success] {name} '
+            try:
 
-            # findUser
-            post_vars = {
-                "orgCode" : schcool,
-                "name" : encrpyt(name),
-                "birthday" : encrpyt(birthday),
-                "stdntPNo" : None,
-                "loginType" : 'school'
-            }
-
-
-            headers = {
-                "Content-Type" : "application/json;charset=UTF-8"
-            }
-
-            sess = requests.session()
-            res = sess.post(self.base_url+'/v2/findUser', json=post_vars, headers=headers)
-            find_user = json.loads(res.text)
-            log += res.text+' '
-
-
-
-
-            # transkeyServlet
-            mtk = mTransKey(sess, "https://hcs.eduro.go.kr/transkeyServlet")
-
-            pw_pad = mtk.new_keypad("number", "password", "password", "password")
-
-            encrypted = pw_pad.encrypt_password(password)
-            hm = mtk.hmac_digest(encrypted.encode())
-            passs = {"raon": [
-                {
-                    "id": "password",
-                    "enc": encrypted,
-                    "hmac": hm,
-                    "keyboardType": "number",
-                    "keyIndex": pw_pad.get_key_index(),
-                    "fieldType": "password",
-                    "seedKey": mtk.crypto.get_encrypted_key(),
-                    "initTime": mtk.initTime,
-                    "ExE2E": "false"
+                # findUser
+                post_vars = {
+                    "orgCode" : schcool,
+                    "name" : encrpyt(name),
+                    "birthday" : encrpyt(birthday),
+                    "stdntPNo" : None,
+                    "loginType" : 'school'
                 }
-            ]}
 
 
-            # validatePassword
-            k = sess.post(self.base_url+"/v2/validatePassword", headers={
-                "User-Agent": "",
-                "Referer": "https://hcs.eduro.go.kr/",
-                "Authorization": find_user['token'],
-                "X-Requested-With": "XMLHttpRequest",
-                "Content-Type": "application/json;charset=utf-8"
-            }, data=json.dumps({
-                "password": json.dumps(passs),
-                "deviceUuid": "",
-                "makeSession": True
-            }))
+                headers = {
+                    "Content-Type" : "application/json;charset=UTF-8"
+                }
 
-
-            # registerServey
-            post_vars = {
-            "deviceUuid": '',
-            "rspns00": 'Y',
-            "rspns01": '1',
-            "rspns02": '1',
-            "rspns03": None,
-            "rspns04": None,
-            "rspns05": None,
-            "rspns06": None,
-            "rspns07": '0',
-            "rspns08": '0',
-            "rspns09": '0',
-            "rspns10": None,
-            "rspns11": None,
-            "rspns12": None,
-            "rspns13": None,
-            "rspns14": None,
-            "rspns15": None,
-            "upperToken" : k.text[1:-1],
-            "upperUserNameEncpt" : name
-            }
+                sess = requests.session()
+                res = sess.post(self.base_url+'/v2/findUser', json=post_vars, headers=headers)
+                find_user = json.loads(res.text)
+                log += res.text+' '
 
 
 
-            headers = {
-                "Content-Type" : "application/json;charset=UTF-8",
-                "Authorization" : k.text[1:-1]
-            }
+
+                # transkeyServlet
+                mtk = mTransKey(sess, "https://hcs.eduro.go.kr/transkeyServlet")
+
+                pw_pad = mtk.new_keypad("number", "password", "password", "password")
+
+                encrypted = pw_pad.encrypt_password(password)
+                hm = mtk.hmac_digest(encrypted.encode())
+                passs = {"raon": [
+                    {
+                        "id": "password",
+                        "enc": encrypted,
+                        "hmac": hm,
+                        "keyboardType": "number",
+                        "keyIndex": pw_pad.get_key_index(),
+                        "fieldType": "password",
+                        "seedKey": mtk.crypto.get_encrypted_key(),
+                        "initTime": mtk.initTime,
+                        "ExE2E": "false"
+                    }
+                ]}
+
+
+                # validatePassword
+                k = sess.post(self.base_url+"/v2/validatePassword", headers={
+                    "User-Agent": "",
+                    "Referer": "https://hcs.eduro.go.kr/",
+                    "Authorization": find_user['token'],
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Content-Type": "application/json;charset=utf-8"
+                }, data=json.dumps({
+                    "password": json.dumps(passs),
+                    "deviceUuid": "",
+                    "makeSession": True
+                }))
+
+
+                # registerServey
+                post_vars = {
+                "deviceUuid": '',
+                "rspns00": 'Y',
+                "rspns01": '1',
+                "rspns02": '1',
+                "rspns03": None,
+                "rspns04": None,
+                "rspns05": None,
+                "rspns06": None,
+                "rspns07": '0',
+                "rspns08": '0',
+                "rspns09": '0',
+                "rspns10": None,
+                "rspns11": None,
+                "rspns12": None,
+                "rspns13": None,
+                "rspns14": None,
+                "rspns15": None,
+                "upperToken" : k.text[1:-1],
+                "upperUserNameEncpt" : name
+                }
 
 
 
-            find_user_url = self.base_url+'/registerServey'
-            res = sess.post(find_user_url, json=post_vars, headers=headers)
-            log += res.text + '\n'
-            
-        except Exception as e:
-            log = f'[+] {datetime.datetime.now()} [failed] {name} '
-            log += e + '\n'
-        
-        finally:
-            write_log(log)
+                headers = {
+                    "Content-Type" : "application/json;charset=UTF-8",
+                    "Authorization" : k.text[1:-1]
+                }
 
+
+
+                find_user_url = self.base_url+'/registerServey'
+                res = sess.post(find_user_url, json=post_vars, headers=headers)
+                log += res.text + '\n'
+
+                write_log(log)
+                break
+
+            except:
+                log = f'[+] {datetime.datetime.now()} [failed] {name} '
+                write_log(log)
+                continue
 
 
 def job():
