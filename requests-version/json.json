@@ -1,20 +1,14 @@
 [
     {
         "name" : "홍길동",
-        "school" : "학교코드",
+        "school" : "학교이름",
         "birthday" : "생년월일 6자리",
         "password" : "페스워드 4자리"    
     },
     {
         "name" : "홍길동",
-        "school" : "학교코드",
-        "birthday" : "생년월일 6자리",
-        "password" : "페스워드 4자리"    
-    },
-    {
-        "name" : "홍길동",
-        "school" : "학교코드",
-        "birthday" : "생년월일 6자리",
-        "password" : "페스워드 4자리"    
+        "school" : "학교이름",
+        "birthday" : "050505",
+        "password" : "1234"    
     }
 ]
