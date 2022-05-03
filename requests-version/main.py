@@ -1,8 +1,11 @@
 import time
 import json
-import requests
 import datetime
 import schedule
+from urllib import parse
+
+import requests
+from bs4 import BeautifulSoup
 
 from base64 import b64encode
 from Crypto.PublicKey import RSA
@@ -70,14 +73,38 @@ class macro:
         while True:
             log = f'[+] {datetime.datetime.now()} [Success] {name} '
             try:
+                # find client version
+                url = 'https://hcs.eduro.go.kr/#/main'
+
+                r = requests.get(url)
+                soup = BeautifulSoup(r.text, 'html.parser')
+                client_version_url = soup.find('link')['href']
+                client_version = client_version_url[client_version_url.rfind('eduro/')+6:client_version_url.rfind('/')]
+
+
+                # school key, orgCode
+                r = requests.get(self.base_url+f'/v2/searchSchool?lctnScCode=01&schulCrseScCode=4&orgName={parse.quote(schcool)}&loginType=school', headers={
+                    "Referer": "https://hcs.eduro.go.kr/",
+                    "Accept": "application/json, text/plain, */*",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Content-Type": "application/json;charset=utf-8"
+                    }
+                )
+
+                r_json = r.json()
+                orgCode = r_json['schulList'][0]['orgCode']
+                searchKey = r_json['key']
+
+
 
                 # findUser
                 post_vars = {
-                    "orgCode" : schcool,
+                    "orgCode" : orgCode,
                     "name" : encrpyt(name),
                     "birthday" : encrpyt(birthday),
                     "stdntPNo" : None,
-                    "loginType" : 'school'
+                    "loginType" : 'school',
+                    "searchKey" : searchKey
                 }
 
 
@@ -89,8 +116,6 @@ class macro:
                 res = sess.post(self.base_url+'/v2/findUser', json=post_vars, headers=headers)
                 find_user = json.loads(res.text)
                 log += res.text+' '
-
-
 
 
                 # transkeyServlet
@@ -128,50 +153,55 @@ class macro:
                     "makeSession": True
                 }))
 
-
+                token_json = json.loads(k.text)
                 # registerServey
                 post_vars = {
-                "deviceUuid": '',
-                "rspns00": 'Y',
-                "rspns01": '1',
-                "rspns02": '1',
-                "rspns03": None,
-                "rspns04": None,
-                "rspns05": None,
-                "rspns06": None,
-                "rspns07": '0',
-                "rspns08": '0',
-                "rspns09": '0',
-                "rspns10": None,
-                "rspns11": None,
-                "rspns12": None,
-                "rspns13": None,
-                "rspns14": None,
-                "rspns15": None,
-                "upperToken" : k.text[1:-1],
-                "upperUserNameEncpt" : name
+                    "deviceUuid": '',
+                    "rspns00": 'Y',
+                    "rspns01": '1',
+                    "rspns02": '1',
+                    "rspns03": '1',
+                    "rspns04": None,
+                    "rspns05": None,
+                    "rspns06": None,
+                    "rspns07": None,
+                    "rspns08": None,
+                    "rspns09": None,
+                    "rspns10": None,
+                    "rspns11": None,
+                    "rspns12": None,
+                    "rspns13": None,
+                    "rspns14": None,
+                    "rspns15": None,
+                    "upperToken" : token_json['token'],
+                    "upperUserNameEncpt" : name,
+                    "clientVersion":client_version
                 }
-
 
 
                 headers = {
                     "Content-Type" : "application/json;charset=UTF-8",
-                    "Authorization" : k.text[1:-1]
+                    "Authorization" : token_json['token']
                 }
 
 
 
                 find_user_url = self.base_url+'/registerServey'
                 res = sess.post(find_user_url, json=post_vars, headers=headers)
-                log += res.text + '\n'
 
-                write_log(log)
+
+                if '<!DOCTYPE' in res.text:
+                    raise('')
+                log += res.text + '\n'
                 break
 
             except:
                 log = f'[+] {datetime.datetime.now()} [failed] {name} '
-                write_log(log)
                 continue
+
+            finally:
+                write_log(log)
+
 
 
 def job():
